@@ -1,0 +1,15 @@
+# Gizli ortam değişkenleri
+.env
+
+# Python sanal ortamı
+venv/
+
+# Python önbellek dosyaları
+__pycache__/
+*.pyc
+
+# Yerel SQLite veritabanı
+*.db
+
+# VS Code yerel ayarları
+.vscode/
