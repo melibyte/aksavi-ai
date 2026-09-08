@@ -30,7 +30,6 @@ def ana_sayfa():
 
 @main_bp.route("/dashboard", methods=["GET"])
 def dashboard():
-
     sohbetler = tum_sohbetler()
     leads = tum_leadler()
     istatistikler = dashboard_istatistikleri()
@@ -49,7 +48,6 @@ def dashboard():
 
 @api_bp.route("/sohbet", methods=["POST"])
 def sohbet():
-
     data = request.get_json(silent=True) or {}
 
     mesaj = str(data.get("mesaj", "")).strip()
@@ -62,14 +60,13 @@ def sohbet():
         }), 400
 
     try:
-
         # Yapay zekâdan cevap al
         yanit = ai_service.yanit_uret(
             mesaj,
             gecmis
         )
 
-        # Konuşmayı veritabanına kaydet
+        # Chatbot konuşmasını veritabanına kaydet
         sohbet_ekle(
             kullanici_mesaji=mesaj,
             ai_yaniti=yanit
@@ -81,7 +78,6 @@ def sohbet():
         }), 200
 
     except AIServiceError:
-
         return jsonify({
             "basarili": False,
             "hata": "Yapay zekâ servisine şu anda ulaşılamıyor."
@@ -94,29 +90,66 @@ def sohbet():
 
 @api_bp.route("/leads", methods=["POST"])
 def lead_olustur():
-
     data = request.get_json(silent=True) or {}
 
     isim = str(data.get("isim", "")).strip()
+    eposta = str(data.get("eposta", "")).strip()
     telefon = str(data.get("telefon", "")).strip()
+    firma = str(data.get("firma", "")).strip()
+    talep_konusu = str(data.get("talep_konusu", "")).strip()
     mesaj = str(data.get("mesaj", "")).strip()
 
-    if not isim or not telefon:
+    kvkk_onay = data.get("kvkk_onay", False)
 
+    # String olarak gelirse boolean'a dönüştür
+    if isinstance(kvkk_onay, str):
+        kvkk_onay = kvkk_onay.lower() in (
+            "true",
+            "1",
+            "yes",
+            "evet",
+            "on"
+        )
+
+    # Zorunlu alan kontrolü
+    if not isim:
         return jsonify({
             "basarili": False,
-            "hata": "İsim ve telefon alanları zorunludur."
+            "hata": "Ad Soyad alanı zorunludur."
         }), 400
 
+    if not eposta:
+        return jsonify({
+            "basarili": False,
+            "hata": "E-posta alanı zorunludur."
+        }), 400
+
+    if not telefon:
+        return jsonify({
+            "basarili": False,
+            "hata": "Telefon alanı zorunludur."
+        }), 400
+
+    if not kvkk_onay:
+        return jsonify({
+            "basarili": False,
+            "hata": "KVKK Aydınlatma Metni'ni kabul etmeniz gerekmektedir."
+        }), 400
+
+    # Veritabanına kaydet
     lead_id = lead_ekle(
         isim=isim,
+        eposta=eposta,
         telefon=telefon,
-        mesaj=mesaj or None
+        firma=firma or None,
+        talep_konusu=talep_konusu or None,
+        mesaj=mesaj or None,
+        kvkk_onay=kvkk_onay
     )
 
     return jsonify({
         "basarili": True,
-        "mesaj": "Talebiniz başarıyla kaydedildi.",
+        "mesaj": "Talebiniz başarıyla alınmıştır.",
         "id": lead_id
     }), 201
 
@@ -127,7 +160,6 @@ def lead_olustur():
 
 @api_bp.route("/leads", methods=["GET"])
 def leadleri_listele():
-
     return jsonify({
         "basarili": True,
         "leads": tum_leadler()
@@ -140,7 +172,6 @@ def leadleri_listele():
 
 @api_bp.route("/sohbetler", methods=["GET"])
 def sohbetleri_listele():
-
     return jsonify({
         "basarili": True,
         "sohbetler": tum_sohbetler()
