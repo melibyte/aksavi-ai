@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>AKSAVİ | Yönetim Paneli</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f4f7fb;
+            color: #102A43;
+        }
+
+        /* =========================
+           ÜST MENÜ
+        ========================== */
+
+        .topbar {
+            height: 75px;
+            background: #102A43;
+            color: white;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            padding: 0 35px;
+
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.12);
+        }
+
+        .brand {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .brand h1 {
+            font-size: 24px;
+            letter-spacing: 2px;
+        }
+
+        .brand span {
+            font-size: 12px;
+            opacity: 0.7;
+            margin-top: 3px;
+        }
+
+        .refresh-button {
+            border: none;
+            background: #19BFB7;
+            color: white;
+
+            padding: 11px 18px;
+
+            border-radius: 8px;
+            cursor: pointer;
+
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .refresh-button:hover {
+            opacity: 0.9;
+        }
+
+
+        /* =========================
+           SAYFA
+        ========================== */
+
+        .container {
+            max-width: 1400px;
+            margin: auto;
+            padding: 35px;
+        }
+
+        .page-title {
+            margin-bottom: 25px;
+        }
+
+        .page-title h2 {
+            font-size: 28px;
+            margin-bottom: 7px;
+        }
+
+        .page-title p {
+            color: #627d98;
+            font-size: 14px;
+        }
+
+
+        /* =========================
+           İSTATİSTİK KARTLARI
+        ========================== */
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 35px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 14px;
+            padding: 25px;
+
+            box-shadow: 0 4px 14px rgba(16, 42, 67, 0.07);
+
+            border-left: 5px solid #19BFB7;
+        }
+
+        .stat-card .label {
+            color: #627d98;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .stat-card .number {
+            font-size: 35px;
+            font-weight: bold;
+            color: #102A43;
+        }
+
+
+        /* =========================
+           PANEL
+        ========================== */
+
+        .panel {
+            background: white;
+
+            border-radius: 14px;
+
+            padding: 25px;
+
+            margin-bottom: 30px;
+
+            box-shadow: 0 4px 14px rgba(16, 42, 67, 0.07);
+        }
+
+        .panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            margin-bottom: 20px;
+        }
+
+        .panel-header h3 {
+            font-size: 20px;
+        }
+
+        .badge {
+            background: #e7f8f7;
+            color: #118a84;
+
+            padding: 6px 11px;
+
+            border-radius: 20px;
+
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+
+        /* =========================
+           SOHBETLER
+        ========================== */
+
+        .conversation {
+            border: 1px solid #e5edf4;
+
+            border-radius: 12px;
+
+            padding: 20px;
+
+            margin-bottom: 15px;
+
+            transition: 0.2s;
+        }
+
+        .conversation:hover {
+            border-color: #19BFB7;
+        }
+
+        .conversation-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            margin-bottom: 15px;
+        }
+
+        .conversation-id {
+            font-weight: bold;
+            font-size: 13px;
+            color: #102A43;
+        }
+
+        .conversation-date {
+            color: #829ab1;
+            font-size: 12px;
+        }
+
+        .message {
+            padding: 13px 15px;
+            border-radius: 9px;
+
+            margin-bottom: 10px;
+
+            line-height: 1.5;
+            font-size: 14px;
+        }
+
+        .user-message {
+            background: #edf2f7;
+        }
+
+        .ai-message {
+            background: #e9fbfa;
+            border-left: 3px solid #19BFB7;
+        }
+
+        .message strong {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+
+        /* =========================
+           TABLO
+        ========================== */
+
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1150px;
+        }
+
+        th {
+            background: #f3f6f9;
+
+            text-align: left;
+
+            padding: 14px;
+
+            font-size: 13px;
+
+            color: #486581;
+
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 14px;
+
+            border-bottom: 1px solid #e5edf4;
+
+            font-size: 14px;
+
+            vertical-align: top;
+        }
+
+        tr:hover {
+            background: #fafcfe;
+        }
+
+
+        /* =========================
+           KVKK DURUMU
+        ========================== */
+
+        .kvkk-ok {
+            display: inline-block;
+
+            background: #e7f8f7;
+            color: #118a84;
+
+            padding: 6px 10px;
+
+            border-radius: 20px;
+
+            font-size: 12px;
+            font-weight: bold;
+
+            white-space: nowrap;
+        }
+
+        .kvkk-no {
+            display: inline-block;
+
+            background: #fff0f0;
+            color: #c0392b;
+
+            padding: 6px 10px;
+
+            border-radius: 20px;
+
+            font-size: 12px;
+            font-weight: bold;
+
+            white-space: nowrap;
+        }
+
+
+        /* =========================
+           BOŞ VERİ
+        ========================== */
+
+        .empty {
+            text-align: center;
+
+            padding: 45px 20px;
+
+            color: #829ab1;
+        }
+
+        .empty-icon {
+            font-size: 38px;
+            margin-bottom: 10px;
+        }
+
+        .empty p {
+            margin-top: 7px;
+        }
+
+
+        /* =========================
+           FOOTER
+        ========================== */
+
+        footer {
+            text-align: center;
+
+            padding: 25px;
+
+            color: #829ab1;
+
+            font-size: 12px;
+        }
+
+
+        /* =========================
+           MOBİL
+        ========================== */
+
+        @media (max-width: 850px) {
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .container {
+                padding: 20px;
+            }
+
+            .topbar {
+                padding: 0 20px;
+            }
+
+            .brand span {
+                display: none;
+            }
+
+            .page-title h2 {
+                font-size: 24px;
+            }
+
+            .panel {
+                padding: 18px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+
+<!-- =========================
+     HEADER
+========================== -->
+
+<header class="topbar">
+
+    <div class="brand">
+
+        <h1>AKSAVİ</h1>
+
+        <span>Cloud & DevOps Solutions</span>
+
+    </div>
+
+
+    <button
+        class="refresh-button"
+        onclick="window.location.reload()"
+    >
+        Verileri Yenile
+    </button>
+
+</header>
+
+
+
+<main class="container">
+
+
+    <!-- =========================
+         BAŞLIK
+    ========================== -->
+
+    <div class="page-title">
+
+        <h2>Yönetim Paneli</h2>
+
+        <p>
+            AKSAVİ chatbot konuşmalarını ve müşteri taleplerini
+            buradan takip edebilirsiniz.
+        </p>
+
+    </div>
+
+
+
+    <!-- =========================
+         İSTATİSTİKLER
+    ========================== -->
+
+    <section class="stats">
+
+
+        <div class="stat-card">
+
+            <div class="label">
+                Toplam Chatbot Konuşması
+            </div>
+
+            <div class="number">
+                {{ istatistikler.toplam_sohbet }}
+            </div>
+
+        </div>
+
+
+
+        <div class="stat-card">
+
+            <div class="label">
+                Bugünkü Konuşmalar
+            </div>
+
+            <div class="number">
+                {{ istatistikler.bugunku_sohbet }}
+            </div>
+
+        </div>
+
+
+
+        <div class="stat-card">
+
+            <div class="label">
+                Müşteri Talepleri
+            </div>
+
+            <div class="number">
+                {{ istatistikler.toplam_talep }}
+            </div>
+
+        </div>
+
+
+    </section>
+
+
+
+    <!-- =========================
+         CHATBOT KONUŞMALARI
+    ========================== -->
+
+    <section class="panel">
+
+
+        <div class="panel-header">
+
+            <h3>Son Chatbot Konuşmaları</h3>
+
+            <span class="badge">
+                {{ sohbetler|length }} kayıt
+            </span>
+
+        </div>
+
+
+
+        {% if sohbetler %}
+
+
+            {% for sohbet in sohbetler %}
+
+            <div class="conversation">
+
+
+                <div class="conversation-top">
+
+                    <span class="conversation-id">
+                        Konuşma #{{ sohbet.id }}
+                    </span>
+
+                    <span class="conversation-date">
+                        {{ sohbet.tarih }}
+                    </span>
+
+                </div>
+
+
+                <div class="message user-message">
+
+                    <strong>
+                        Kullanıcı
+                    </strong>
+
+                    {{ sohbet.kullanici_mesaji }}
+
+                </div>
+
+
+                <div class="message ai-message">
+
+                    <strong>
+                        AKSAVİ AI
+                    </strong>
+
+                    {{ sohbet.ai_yaniti }}
+
+                </div>
+
+
+            </div>
+
+            {% endfor %}
+
+
+        {% else %}
+
+
+            <div class="empty">
+
+                <div class="empty-icon">
+                    💬
+                </div>
+
+                <strong>
+                    Henüz chatbot konuşması yok.
+                </strong>
+
+                <p>
+                    Chatbot üzerinden mesaj gönderildiğinde
+                    burada görünecek.
+                </p>
+
+            </div>
+
+
+        {% endif %}
+
+
+    </section>
+
+
+
+    <!-- =========================
+         MÜŞTERİ TALEPLERİ
+    ========================== -->
+
+    <section class="panel">
+
+
+        <div class="panel-header">
+
+            <h3>Müşteri Talepleri</h3>
+
+            <span class="badge">
+                {{ leads|length }} kayıt
+            </span>
+
+        </div>
+
+
+
+        {% if leads %}
+
+
+        <div class="table-wrapper">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>ID</th>
+
+                        <th>Ad Soyad</th>
+
+                        <th>E-posta</th>
+
+                        <th>Telefon</th>
+
+                        <th>Firma</th>
+
+                        <th>Talep Konusu</th>
+
+                        <th>Mesaj</th>
+
+                        <th>KVKK</th>
+
+                        <th>Tarih</th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+
+                    {% for lead in leads %}
+
+                    <tr>
+
+                        <td>
+                            #{{ lead.id }}
+                        </td>
+
+
+                        <td>
+                            {{ lead.isim }}
+                        </td>
+
+
+                        <td>
+                            {{ lead.eposta or "-" }}
+                        </td>
+
+
+                        <td>
+                            {{ lead.telefon }}
+                        </td>
+
+
+                        <td>
+                            {{ lead.firma or "-" }}
+                        </td>
+
+
+                        <td>
+                            {{ lead.talep_konusu or "-" }}
+                        </td>
+
+
+                        <td>
+                            {{ lead.mesaj or "-" }}
+                        </td>
+
+
+                        <td>
+
+                            {% if lead.kvkk_onay %}
+
+                                <span class="kvkk-ok">
+                                    Onaylandı
+                                </span>
+
+                            {% else %}
+
+                                <span class="kvkk-no">
+                                    Onaylanmadı
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <td>
+                            {{ lead.tarih }}
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+        {% else %}
+
+
+        <div class="empty">
+
+            <div class="empty-icon">
+                📋
+            </div>
+
+            <strong>
+                Henüz müşteri talebi bulunmuyor.
+            </strong>
+
+            <p>
+                Wix iletişim formundan gönderilen talepler
+                burada görünecek.
+            </p>
+
+        </div>
+
+
+        {% endif %}
+
+
+    </section>
+
+
+</main>
+
+
+
+<footer>
+
+    AKSAVİ Cloud & DevOps Solutions • Yönetim Paneli
+
+</footer>
+
+
+</body>
+</html>

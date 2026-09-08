@@ -21,10 +21,11 @@ def close_db(error=None):
 
 
 def init_db(app):
-    """Leads tablosunu oluşturur ve bağlantı kapatma işlemini kaydeder."""
+    """Gerekli veritabanı tablolarını oluşturur."""
     with app.app_context():
         db = get_db()
 
+        # Müşteri talepleri
         db.execute(
             """
             CREATE TABLE IF NOT EXISTS leads (
@@ -37,13 +38,25 @@ def init_db(app):
             """
         )
 
+        # Chatbot konuşmaları
+        db.execute(
+            """
+            CREATE TABLE IF NOT EXISTS sohbetler (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                kullanici_mesaji TEXT NOT NULL,
+                ai_yaniti TEXT NOT NULL,
+                tarih TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+            """
+        )
+
         db.commit()
 
     app.teardown_appcontext(close_db)
 
 
 def lead_ekle(isim, telefon, mesaj=None):
-    """Yeni bir potansiyel müşteri kaydı oluşturur."""
+    """Yeni müşteri talebi kaydeder."""
     db = get_db()
 
     cursor = db.execute(
@@ -60,7 +73,7 @@ def lead_ekle(isim, telefon, mesaj=None):
 
 
 def tum_leadler():
-    """Potansiyel müşteri kayıtlarını en yeniden eskiye listeler."""
+    """Tüm müşteri taleplerini listeler."""
     db = get_db()
 
     kayitlar = db.execute(
@@ -72,3 +85,62 @@ def tum_leadler():
     ).fetchall()
 
     return [dict(kayit) for kayit in kayitlar]
+
+
+def sohbet_ekle(kullanici_mesaji, ai_yaniti):
+    """Chatbot konuşmasını veritabanına kaydeder."""
+    db = get_db()
+
+    cursor = db.execute(
+        """
+        INSERT INTO sohbetler (kullanici_mesaji, ai_yaniti)
+        VALUES (?, ?)
+        """,
+        (kullanici_mesaji, ai_yaniti),
+    )
+
+    db.commit()
+
+    return cursor.lastrowid
+
+
+def tum_sohbetler():
+    """Tüm chatbot konuşmalarını en yeniden eskiye listeler."""
+    db = get_db()
+
+    kayitlar = db.execute(
+        """
+        SELECT id, kullanici_mesaji, ai_yaniti, tarih
+        FROM sohbetler
+        ORDER BY id DESC
+        """
+    ).fetchall()
+
+    return [dict(kayit) for kayit in kayitlar]
+
+
+def dashboard_istatistikleri():
+    """Yönetim paneli için temel istatistikleri döndürür."""
+    db = get_db()
+
+    toplam_sohbet = db.execute(
+        "SELECT COUNT(*) AS toplam FROM sohbetler"
+    ).fetchone()["toplam"]
+
+    bugunku_sohbet = db.execute(
+        """
+        SELECT COUNT(*) AS toplam
+        FROM sohbetler
+        WHERE DATE(tarih) = DATE('now')
+        """
+    ).fetchone()["toplam"]
+
+    toplam_talep = db.execute(
+        "SELECT COUNT(*) AS toplam FROM leads"
+    ).fetchone()["toplam"]
+
+    return {
+        "toplam_sohbet": toplam_sohbet,
+        "bugunku_sohbet": bugunku_sohbet,
+        "toplam_talep": toplam_talep,
+    }
